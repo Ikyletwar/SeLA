@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SeLA - Super Easy Learning AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- KaTeX CSS & JS (dimuat di awal agar siap digunakan) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg-primary: #08090c;
+      --bg-secondary: #0f1218;
+      --bg-card: #151922;
+      --bg-elevated: #1c2230;
+      --fg-primary: #f0f2f5;
+      --fg-secondary: #a1a7b4;
+      --fg-muted: #6b7280;
+      --accent: #00d4aa;
+      --accent-dim: #00b894;
+      --accent-glow: rgba(0, 212, 170, 0.2);
+      --error: #ef4444;
+      --error-bg: rgba(239, 68, 68, 0.12);
+      --success: #22c55e;
+      --border: #252d3d;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-primary);
+      color: var(--fg-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .font-display { font-family: 'Space Grotesk', sans-serif; }
+
+    .bg-pattern {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .bg-pattern::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -30%;
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(circle, rgba(0, 212, 170, 0.08) 0%, transparent 50%);
+      border-radius: 50%;
+    }
+    .bg-pattern::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -20%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(circle, rgba(30, 64, 175, 0.06) 0%, transparent 50%);
+      border-radius: 50%;
+    }
+
+    #particles-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .main-wrap {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page-section {
+      display: none;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .page-section.active { display: block; }
+    .page-section.visible { opacity: 1; transform: translateY(0); }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .form-group { margin-bottom: 20px; }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg-secondary);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg-elevated);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 15px;
+      color: var(--fg-primary);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input::placeholder { color: var(--fg-muted); }
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+    }
+
+    .range-wrap { position: relative; padding: 10px 0; }
+    
+    .range-input {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--bg-elevated);
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .range-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .range-input::-webkit-slider-thumb:hover { transform: scale(1.1); }
+    .range-input::-moz-range-thumb {
+      width: 22px; height: 22px;
+      background: var(--accent);
+      border: none; border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .range-badge {
+      position: absolute;
+      right: 0; top: -4px;
+      background: var(--accent);
+      color: var(--bg-primary);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 20px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg-primary);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-dim);
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--fg-secondary);
+      border: 2px solid var(--border);
+    }
+    .btn-ghost:hover { background: var(--bg-elevated); border-color: var(--fg-muted); }
+
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-dots::after {
+      content: '';
+      animation: dots 1.2s steps(4) infinite;
+    }
+    @keyframes dots {
+      0%, 20% { content: ''; }
+      40% { content: '.'; }
+      60% { content: '..'; }
+      80%, 100% { content: '...'; }
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-card) 50%, var(--bg-elevated) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .step-item.running {
+      background: var(--accent-glow);
+      border: 1px solid var(--accent);
+    }
+    .step-item.done { opacity: 0.5; }
+    .step-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-item.running .step-num {
+      background: var(--accent);
+      color: var(--bg-primary);
+    }
+    .step-item.done .step-num {
+      background: var(--success);
+      color: var(--bg-primary);
+    }
+
+    .q-option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 14px 18px;
+      background: var(--bg-elevated);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--fg-primary);
+    }
+    .q-option:hover:not(:disabled) { border-color: var(--fg-muted); background: var(--bg-card); }
+    .q-option.picked { border-color: var(--accent); background: var(--accent-glow); }
+    .q-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .q-option.right { border-color: var(--success); background: rgba(34, 197, 94, 0.1); }
+    .q-option.wrong { border-color: var(--error); background: var(--error-bg); }
+    .q-option:disabled { cursor: default; }
+
+    .progress-track {
+      height: 5px;
+      background: var(--bg-elevated);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    .score-ring {
+      width: 140px; height: 140px;
+      position: relative;
+    }
+    .score-ring svg { transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: var(--bg-elevated); stroke-width: 8; }
+    .ring-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 377;
+      stroke-dashoffset: 377;
+      transition: stroke-dashoffset 1.2s ease;
+    }
+    .score-num {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .error-box {
+      background: var(--error-bg);
+      border: 1px solid var(--error);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .error-box svg { color: var(--error); flex-shrink: 0; }
+
+    .fade-up { opacity: 0; transform: translateY(12px); }
+    .fade-up.show { animation: fadeUp 0.4s ease forwards; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    .debug-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--fg-muted);
+      word-break: break-all;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 480px) {
+      .card { border-radius: 12px; }
+      .btn { width: 100%; padding: 12px 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern" aria-hidden="true"></div>
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <div class="main-wrap">
+    <header style="padding: 20px 16px; border-bottom: 1px solid var(--border);">
+      <div style="max-width: 640px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" fill="none" stroke="var(--bg-primary)" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <span class="font-display" style="font-weight: 700; font-size: 18px;">SeLA</span>
+        </div>
+        <span style="font-size: 12px; color: var(--fg-muted);">Super Easy Learning AI</span>
+      </div>
+    </header>
+
+    <main style="flex: 1; padding: 32px 16px;">
+      <div style="max-width: 560px; margin: 0 auto;">
+
+        <div style="text-align: center; margin-bottom: 28px;">
+          <h1 class="font-display" style="font-size: clamp(28px, 5vw, 36px); font-weight: 700; margin-bottom: 8px;">
+            Belajar Jadi <span style="color: var(--accent);">Lebih Mudah</span>
+          </h1>
+          <p style="color: var(--fg-secondary); font-size: 15px;">Buat soal latihan dari materi apapun sesuai kebutuhanmu</p>
+        </div>
+
+        <!-- Form Section -->
+        <section id="sec-form" class="page-section active visible">
+          <div class="card" style="padding: 24px;">
+            <form id="main-form">
+              <div class="form-group">
+                <label class="form-label" for="inp-subject">Materi Pelajaran</label>
+                <input type="text" id="inp-subject" class="form-input" placeholder="Contoh: Matematika, Sejarah, Excel, Python..." required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Jumlah Soal</label>
+                <div class="range-wrap">
+                  <input type="range" id="inp-count" class="range-input" min="3" max="30" value="10">
+                  <span class="range-badge" id="count-badge">10</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--fg-muted); margin-top: 4px;">
+                  <span>Min 3</span><span>Max 30</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inp-diff">Tingkat Kesulitan</label>
+                <input type="text" id="inp-diff" class="form-input" placeholder="Contoh: mudah, SD, SMP, SMA, sulit..." required>
+              </div>
+
+              <div id="error-box" class="error-box" style="display: none; margin-bottom: 20px;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <div>
+                  <div style="font-weight: 600; margin-bottom: 2px;" id="err-title">Error</div>
+                  <div style="font-size: 13px; color: var(--fg-secondary);" id="err-msg">Message</div>
+                </div>
+              </div>
+
+              <button type="submit" id="btn-generate" class="btn btn-primary" style="width: 100%;">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                Generate Soal
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- Loading Section -->
+        <section id="sec-loading" class="page-section">
+          <div class="card" style="padding: 28px; text-align: center;">
+            <div class="spinner" style="margin: 0 auto 16px;"></div>
+            <h2 class="font-display" style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">
+              Membuat Soal<span class="loading-dots"></span>
+            </h2>
+            <p id="loading-text" style="font-size: 13px; color: var(--fg-muted); margin-bottom: 20px;">Menghubungkan ke AI...</p>
+
+            <div id="steps-wrap" style="text-align: left; margin-bottom: 20px;">
+              <div class="step-item running" data-step="1">
+                <div class="step-num">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span>Menghubungkan ke AI</span>
+              </div>
+              <div class="step-item" data-step="2">
+                <div class="step-num">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span>Menganalisis materi</span>
+              </div>
+              <div class="step-item" data-step="3">
+                <div class="step-num">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span>Membuat soal</span>
+              </div>
+              <div class="step-item" data-step="4">
+                <div class="step-num">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span>Memvalidasi hasil</span>
+              </div>
+            </div>
+
+            <div class="skeleton" style="height: 14px; width: 70%; margin: 0 auto 8px;"></div>
+            <div class="skeleton" style="height: 40px; margin-bottom: 6px;"></div>
+            <div class="skeleton" style="height: 40px; margin-bottom: 6px;"></div>
+            <div class="skeleton" style="height: 40px; width: 60%;"></div>
+          </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="sec-quiz" class="page-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <h2 class="font-display" id="quiz-title" style="font-size: 17px; font-weight: 600;">Quiz</h2>
+              <p style="font-size: 12px; color: var(--fg-muted);">Pilih jawaban yang paling tepat</p>
+            </div>
+            <div style="background: var(--bg-elevated); padding: 6px 14px; border-radius: 8px; font-size: 13px;">
+              <span style="color: var(--fg-muted);">Terjawab </span>
+              <span style="color: var(--accent); font-weight: 600;" id="answered-num">0</span>
+              <span style="color: var(--fg-muted);"> / </span>
+              <span style="font-weight: 600;" id="total-num">10</span>
+            </div>
+          </div>
+
+          <div class="progress-track" style="margin-bottom: 20px;">
+            <div class="progress-bar" id="progress-bar" style="width: 0%;"></div>
+          </div>
+
+          <div id="questions-wrap" style="display: flex; flex-direction: column; gap: 16px;"></div>
+
+          <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <button type="button" id="btn-submit-quiz" class="btn btn-primary" style="flex: 1;" disabled>
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              Selesai
+            </button>
+            <button type="button" id="btn-cancel" class="btn btn-ghost">Batal</button>
+          </div>
+        </section>
+
+        <!-- Result Section -->
+        <section id="sec-result" class="page-section">
+          <div class="card" style="padding: 24px; text-align: center; margin-bottom: 16px;">
+            <div class="score-ring" style="margin: 0 auto 20px;">
+              <svg width="140" height="140" viewBox="0 0 140 140">
+                <circle class="ring-bg" cx="70" cy="70" r="60"/>
+                <circle class="ring-fill" id="score-ring" cx="70" cy="70" r="60"/>
+              </svg>
+              <div class="score-num">
+                <div class="font-display" style="font-size: 32px; font-weight: 700; color: var(--accent);" id="score-pct">0%</div>
+                <div style="font-size: 12px; color: var(--fg-muted);">Skor</div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 0 auto 16px;">
+              <div style="background: var(--bg-elevated); padding: 12px; border-radius: 10px;">
+                <div class="font-display" style="font-size: 22px; font-weight: 700; color: var(--success);" id="correct-num">0</div>
+                <div style="font-size: 11px; color: var(--fg-muted);">Benar</div>
+              </div>
+              <div style="background: var(--bg-elevated); padding: 12px; border-radius: 10px;">
+                <div class="font-display" style="font-size: 22px; font-weight: 700; color: var(--error);" id="wrong-num">0</div>
+                <div style="font-size: 11px; color: var(--fg-muted);">Salah</div>
+              </div>
+              <div style="background: var(--bg-elevated); padding: 12px; border-radius: 10px;">
+                <div class="font-display" style="font-size: 22px; font-weight: 700;" id="all-num">0</div>
+                <div style="font-size: 11px; color: var(--fg-muted);">Total</div>
+              </div>
+            </div>
+
+            <p style="color: var(--fg-secondary); font-size: 14px;" id="result-msg">Pertahankan semangat belajarmu!</p>
+          </div>
+
+          <div class="card" style="padding: 20px;">
+            <h3 class="font-display" style="font-size: 15px; font-weight: 600; margin-bottom: 14px;">Review Jawaban</h3>
+            <div id="review-wrap" style="display: flex; flex-direction: column; gap: 12px;"></div>
+          </div>
+
+          <div style="margin-top: 20px; text-align: center;">
+            <button type="button" id="btn-restart" class="btn btn-primary">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+              </svg>
+              Buat Quiz Baru
+            </button>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <footer style="padding: 16px; text-align: center; border-top: 1px solid var(--border);">
+      <p style="font-size: 11px; color: var(--fg-muted);">SeLA - Super Easy Learning AI</p>
+    </footer>
+  </div>
+
+  <script>
+    // =============================================
+    // CONFIG - EXACTLY AS YOU PROVIDED
+    // =============================================
+    const API_CONFIG = {
+      url: 'https://api.cerebras.ai/v1/chat/completions',
+      key: '',
+      model: 'qwen-3-235b-a22b-instruct-2507',
+      max_tokens: 20000,
+      temperature: 0.7,
+      top_p: 0.8,
+      timeout: 120000
+    };
+
+    // =============================================
+    // APP STATE
+    // =============================================
+    const APP = {
+      questions: [],
+      answers: {},
+      currentSection: 'form'
+    };
+
+    // =============================================
+    // DOM REFERENCES
+    // =============================================
+    const DOM = {};
+
+    // =============================================
+    // INITIALIZATION
+    // =============================================
+    function initApp() {
+      // Cache DOM elements
+      DOM.secForm = document.getElementById('sec-form');
+      DOM.secLoading = document.getElementById('sec-loading');
+      DOM.secQuiz = document.getElementById('sec-quiz');
+      DOM.secResult = document.getElementById('sec-result');
+      DOM.mainForm = document.getElementById('main-form');
+      DOM.inpSubject = document.getElementById('inp-subject');
+      DOM.inpCount = document.getElementById('inp-count');
+      DOM.inpDiff = document.getElementById('inp-diff');
+      DOM.countBadge = document.getElementById('count-badge');
+      DOM.errorBox = document.getElementById('error-box');
+      DOM.errTitle = document.getElementById('err-title');
+      DOM.errMsg = document.getElementById('err-msg');
+      DOM.btnGenerate = document.getElementById('btn-generate');
+      DOM.loadingText = document.getElementById('loading-text');
+      DOM.stepsWrap = document.getElementById('steps-wrap');
+      DOM.questionsWrap = document.getElementById('questions-wrap');
+      DOM.progressBar = document.getElementById('progress-bar');
+      DOM.answeredNum = document.getElementById('answered-num');
+      DOM.totalNum = document.getElementById('total-num');
+      DOM.quizTitle = document.getElementById('quiz-title');
+      DOM.btnSubmitQuiz = document.getElementById('btn-submit-quiz');
+      DOM.btnCancel = document.getElementById('btn-cancel');
+      DOM.scoreRing = document.getElementById('score-ring');
+      DOM.scorePct = document.getElementById('score-pct');
+      DOM.correctNum = document.getElementById('correct-num');
+      DOM.wrongNum = document.getElementById('wrong-num');
+      DOM.allNum = document.getElementById('all-num');
+      DOM.resultMsg = document.getElementById('result-msg');
+      DOM.reviewWrap = document.getElementById('review-wrap');
+      DOM.btnRestart = document.getElementById('btn-restart');
+
+      // Init particles
+      initParticles();
+
+      // Bind events
+      bindEvents();
+
+      // Render math on initial load (if any static content)
+      renderMath();
+
+      console.log('SeLA initialized');
+      console.log('API Config:', API_CONFIG.url, API_CONFIG.model);
+    }
+
+    // =============================================
+    // PARTICLES BACKGROUND
+    // =============================================
+    function initParticles() {
+      const canvas = document.getElementById('particles-canvas');
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      let W = 0, H = 0;
+      let particles = [];
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function resize() {
+        W = Math.max(1, window.innerWidth);
+        H = Math.max(1, window.innerHeight);
+        canvas.width = W;
+        canvas.height = H;
+        createParticles();
+      }
+
+      function createParticles() {
+        particles = [];
+        const num = Math.max(30, Math.min(100, Math.floor((W * H) / 12000)));
+        for (let i = 0; i < num; i++) {
+          particles.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.max(0.5, Math.random() * 1.8 + 0.4),
+            dx: (Math.random() - 0.5) * 0.35,
+            dy: (Math.random() - 0.5) * 0.35,
+            a: Math.random() * 0.35 + 0.08
+          });
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        for (const p of particles) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, Math.max(0.5, p.r), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(0, 212, 170, ${Math.max(0, Math.min(1, p.a))})`;
+          ctx.fill();
+
+          if (!reducedMotion) {
+            p.x += p.dx;
+            p.y += p.dy;
+            if (p.x < 0) p.x = W;
+            else if (p.x > W) p.x = 0;
+            if (p.y < 0) p.y = H;
+            else if (p.y > H) p.y = 0;
+          }
+        }
+        if (!reducedMotion) requestAnimationFrame(draw);
+      }
+
+      resize();
+      window.addEventListener('resize', resize);
+      draw();
+    }
+
+    // =============================================
+    // SECTION NAVIGATION
+    // =============================================
+    function showSection(name) {
+      const sections = { form: DOM.secForm, loading: DOM.secLoading, quiz: DOM.secQuiz, result: DOM.secResult };
+      
+      for (const [key, el] of Object.entries(sections)) {
+        if (el) {
+          if (key === name) {
+            el.classList.add('active');
+            requestAnimationFrame(() => el.classList.add('visible'));
+          } else {
+            el.classList.remove('visible', 'active');
+          }
+        }
+      }
+      APP.currentSection = name;
+    }
+
+    // =============================================
+    // ERROR HANDLING
+    // =============================================
+    function displayError(title, message) {
+      if (DOM.errorBox) {
+        DOM.errorBox.style.display = 'flex';
+        if (DOM.errTitle) DOM.errTitle.textContent = title || 'Error';
+        if (DOM.errMsg) DOM.errMsg.textContent = message || 'Terjadi kesalahan';
+      }
+    }
+
+    function hideError() {
+      if (DOM.errorBox) DOM.errorBox.style.display = 'none';
+    }
+
+    // =============================================
+    // LOADING PROGRESS
+    // =============================================
+    function setProgressStep(step, text) {
+      const items = DOM.stepsWrap?.querySelectorAll('.step-item');
+      if (items) {
+        items.forEach((item, i) => {
+          item.classList.remove('running', 'done');
+          if (i + 1 < step) item.classList.add('done');
+          else if (i + 1 === step) item.classList.add('running');
+        });
+      }
+      if (DOM.loadingText && text) DOM.loadingText.textContent = text;
+    }
+
+    // =============================================
+    // KATEX RENDERING
+    // =============================================
+    function renderMath() {
+      if (typeof renderMathInElement === 'function') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    // =============================================
+    // API CALL - MODIFIED PROMPT WITH LATEX PERSONA
+    // =============================================
+    async function fetchQuestions(subject, count, difficulty) {
+      // Tambahkan instruksi LaTeX untuk materi matematika/fisika/perhitungan
+      const systemPrompt = 'Kamu adalah asisten pendidikan yang ahli membuat soal pilihan ganda. ' +
+                           'Kamu hanya merespons dengan format JSON valid yang diapit oleh ```json dan ```, tanpa teks lain. ' +
+                           'Untuk materi yang mengandung rumus (matematika, fisika, kimia, atau perhitungan lainnya), gunakan format LaTeX untuk menulis rumus (contoh: $x^2$, $\\frac{a}{b}$, $$\\int_{a}^{b} f(x)dx$$).';
+      
+      const userPrompt = `Buat ${count} soal pilihan ganda tentang "${subject}" dengan tingkat kesulitan "${difficulty}".
+
+WAJIB: Kembalikan HANYA JSON valid yang diapit oleh \`\`\`json dan \`\`\`, tanpa teks lain.
+
+{
+  "questions": [
+    {
+      "question": "pertanyaan lengkap (gunakan LaTeX jika perlu)",
+      "options": ["A. opsi 1", "B. opsi 2", "C. opsi 3", "D. opsi 4"],
+      "correct_answer": "A",
+      "explanation": "penjelasan singkat (bisa gunakan LaTeX)"
+    }
+  ]
+}
+
+Aturan:
+- Soal harus relevan dengan "${subject}"
+- Tingkat kesulitan: "${difficulty}"
+- Jawaban benar hanya huruf A, B, C, atau D
+- 4 pilihan per soal
+- Jangan tambahkan teks apapun selain JSON
+- Untuk rumus matematika/fisika, gunakan LaTeX dengan delimiter $...$ atau $$...$$`;
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), API_CONFIG.timeout);
+
+      try {
+        setProgressStep(1, 'Menghubungkan ke AI...');
+
+        // Build request body EXACTLY matching your curl
+        const requestBody = {
+          model: API_CONFIG.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          stream: false,
+          max_tokens: API_CONFIG.max_tokens,
+          temperature: API_CONFIG.temperature,
+          top_p: API_CONFIG.top_p
+        };
+
+        console.log('Sending request to:', API_CONFIG.url);
+        console.log('Model:', API_CONFIG.model);
+        console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+        const res = await fetch(API_CONFIG.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${API_CONFIG.key}`
+          },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeout);
+
+        console.log('Response status:', res.status);
+        console.log('Response OK:', res.ok);
+
+        if (!res.ok) {
+          let errMsg = `Server error: ${res.status}`;
+          try {
+            const errData = await res.json();
+            console.log('Error response:', errData);
+            errMsg = errData.error?.message || errData.message || errMsg;
+          } catch (e) {
+            const errText = await res.text();
+            console.log('Error text:', errText);
+            errMsg = errText || errMsg;
+          }
+          throw new Error(errMsg);
+        }
+
+        setProgressStep(2, 'Menganalisis materi...');
+        await wait(400);
+
+        const data = await res.json();
+        console.log('Response data:', data);
+
+        const content = data.choices?.[0]?.message?.content;
+        console.log('Raw content:', content);
+
+        if (!content) throw new Error('AI tidak memberikan respons');
+
+        setProgressStep(3, 'Membuat soal...');
+        await wait(300);
+
+        // ===== PARSING JSON YANG LEBIH ROBUST =====
+        let jsonStr = content.trim();
+
+        // Coba ekstrak dari blok kode ```json ... ```
+        const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)```/i;
+        let codeMatch = jsonStr.match(codeBlockRegex);
+        if (codeMatch) {
+          jsonStr = codeMatch[1].trim();
+        } else {
+          // Fallback: ambil dari { pertama sampai } terakhir
+          const braceMatch = jsonStr.match(/\{[\s\S]*\}/);
+          if (braceMatch) jsonStr = braceMatch[0];
+        }
+
+        // Hapus karakter kontrol (kecuali \n, \t) yang mungkin mengganggu JSON
+        jsonStr = jsonStr.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
+
+        // Hapus trailing comma sebelum } atau ] (perbaikan umum)
+        jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
+
+        console.log('JSON string to parse:', jsonStr.substring(0, 500));
+
+        setProgressStep(4, 'Memvalidasi hasil...');
+        await wait(200);
+
+        const parsed = JSON.parse(jsonStr);
+        console.log('Parsed:', parsed);
+
+        if (!parsed.questions || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+          throw new Error('Tidak ada soal yang dihasilkan');
+        }
+
+        console.log('Questions count:', parsed.questions.length);
+        return parsed.questions;
+
+      } catch (err) {
+        clearTimeout(timeout);
+        console.error('API Error:', err);
+        if (err.name === 'AbortError') {
+          throw new Error('Permintaan timeout. Coba lagi.');
+        }
+        throw err;
+      }
+    }
+
+    function wait(ms) {
+      return new Promise(r => setTimeout(r, ms));
+    }
+
+    // =============================================
+    // RENDER QUESTIONS
+    // =============================================
+    function renderQuestions() {
+      if (!DOM.questionsWrap) return;
+      DOM.questionsWrap.innerHTML = '';
+
+      APP.questions.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card fade-up';
+        card.style.padding = '18px';
+        card.style.animationDelay = `${idx * 0.06}s`;
+
+        const optsHtml = q.options.map((opt, i) => {
+          const letter = ['A', 'B', 'C', 'D'][i];
+          const cleanOpt = opt.replace(/^[A-D]\.\s*/, '');
+          return `<button type="button" class="q-option" data-idx="${idx}" data-ans="${letter}">
+            <span style="color: var(--accent); font-weight: 600; margin-right: 6px;">${letter}.</span>${escapeHTML(cleanOpt)}
+          </button>`;
+        }).join('');
+
+        card.innerHTML = `
+          <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+            <div style="width: 26px; height: 26px; background: var(--accent); color: var(--bg-primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;">${idx + 1}</div>
+            <p style="flex: 1; font-size: 14px; line-height: 1.5;">${escapeHTML(q.question)}</p>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; padding-left: 36px;">${optsHtml}</div>
+        `;
+
+        DOM.questionsWrap.appendChild(card);
+      });
+
+      requestAnimationFrame(() => {
+        DOM.questionsWrap.querySelectorAll('.fade-up').forEach(el => el.classList.add('show'));
+      });
+
+      // Render math after questions are added
+      renderMath();
+
+      if (DOM.totalNum) DOM.totalNum.textContent = APP.questions.length;
+    }
+
+    function escapeHTML(str) {
+      if (typeof str !== 'string') return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // =============================================
+    // QUIZ LOGIC
+    // =============================================
+    function pickAnswer(qIdx, ans) {
+      APP.answers[qIdx] = ans;
+
+      const card = DOM.questionsWrap?.children[qIdx];
+      if (card) {
+        card.querySelectorAll('.q-option').forEach(btn => {
+          btn.classList.remove('picked');
+          if (btn.dataset.ans === ans) btn.classList.add('picked');
+        });
+      }
+
+      updateQuizProgress();
+    }
+
+    function updateQuizProgress() {
+      const answered = Object.keys(APP.answers).length;
+      const total = APP.questions.length;
+      const pct = total > 0 ? (answered / total) * 100 : 0;
+
+      if (DOM.progressBar) DOM.progressBar.style.width = pct + '%';
+      if (DOM.answeredNum) DOM.answeredNum.textContent = answered;
+      if (DOM.btnSubmitQuiz) DOM.btnSubmitQuiz.disabled = answered < total;
+    }
+
+    // =============================================
+    // RESULTS
+    // =============================================
+    function showResults() {
+      let correct = 0;
+      APP.questions.forEach((q, i) => {
+        if (APP.answers[i] === q.correct_answer) correct++;
+      });
+
+      const total = APP.questions.length;
+      const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+      const wrong = total - correct;
+
+      if (DOM.scorePct) DOM.scorePct.textContent = pct + '%';
+      if (DOM.correctNum) DOM.correctNum.textContent = correct;
+      if (DOM.wrongNum) DOM.wrongNum.textContent = wrong;
+      if (DOM.allNum) DOM.allNum.textContent = total;
+
+      const circ = 2 * Math.PI * 60;
+      const offset = circ - (pct / 100) * circ;
+      if (DOM.scoreRing) {
+        DOM.scoreRing.style.strokeDasharray = circ;
+        setTimeout(() => { DOM.scoreRing.style.strokeDashoffset = offset; }, 100);
+      }
+
+      let msg = '';
+      if (pct >= 90) msg = 'Luar biasa! Kamu menguasai materi ini!';
+      else if (pct >= 70) msg = 'Bagus! Terus pertahankan!';
+      else if (pct >= 50) msg = 'Cukup baik. Terus berlatih!';
+      else msg = 'Jangan menyerah! Coba lagi.';
+      if (DOM.resultMsg) DOM.resultMsg.textContent = msg;
+
+      renderReview();
+      showSection('result');
+    }
+
+    function renderReview() {
+      if (!DOM.reviewWrap) return;
+      DOM.reviewWrap.innerHTML = '';
+
+      APP.questions.forEach((q, i) => {
+        const userAns = APP.answers[i];
+        const isRight = userAns === q.correct_answer;
+
+        const item = document.createElement('div');
+        item.className = 'fade-up';
+        item.style.cssText = `padding: 14px; background: var(--bg-elevated); border-radius: 10px; border-left: 3px solid ${isRight ? 'var(--success)' : 'var(--error)'};`;
+        item.style.animationDelay = `${i * 0.04}s`;
+
+        item.innerHTML = `
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <div style="width: 18px; height: 18px; border-radius: 50%; background: ${isRight ? 'var(--success)' : 'var(--error)'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              ${isRight ? '<svg width="10" height="10" fill="none" stroke="var(--bg-primary)" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' : '<svg width="10" height="10" fill="none" stroke="var(--bg-primary)" stroke-width="3" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'}
+            </div>
+            <p style="flex: 1; font-size: 13px; font-weight: 500;">${escapeHTML(q.question)}</p>
+          </div>
+          <div style="padding-left: 26px; font-size: 12px;">
+            <div><span style="color: var(--fg-muted);">Jawaban kamu:</span> <span style="color: ${isRight ? 'var(--success)' : 'var(--error)'}; font-weight: 600;">${userAns || '-'}</span></div>
+            ${!isRight ? `<div><span style="color: var(--fg-muted);">Jawaban benar:</span> <span style="color: var(--success); font-weight: 600;">${q.correct_answer}</span></div>` : ''}
+            ${q.explanation ? `<div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); color: var(--fg-muted);">${escapeHTML(q.explanation)}</div>` : ''}
+          </div>
+        `;
+
+        DOM.reviewWrap.appendChild(item);
+      });
+
+      requestAnimationFrame(() => {
+        DOM.reviewWrap.querySelectorAll('.fade-up').forEach(el => el.classList.add('show'));
+      });
+
+      // Render math in review
+      renderMath();
+    }
+
+    // =============================================
+    // RESET
+    // =============================================
+    function resetAll() {
+      APP.questions = [];
+      APP.answers = {};
+      if (DOM.mainForm) DOM.mainForm.reset();
+      if (DOM.countBadge) DOM.countBadge.textContent = '10';
+      if (DOM.inpCount) DOM.inpCount.value = '10';
+      if (DOM.scoreRing) DOM.scoreRing.style.strokeDashoffset = 377;
+      hideError();
+      showSection('form');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =============================================
+    // EVENT BINDING
+    // =============================================
+    function bindEvents() {
+      // Range slider
+      if (DOM.inpCount && DOM.countBadge) {
+        DOM.inpCount.addEventListener('input', () => {
+          DOM.countBadge.textContent = DOM.inpCount.value;
+        });
+      }
+
+      // Form submit
+      if (DOM.mainForm) {
+        DOM.mainForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          hideError();
+
+          const subject = DOM.inpSubject?.value?.trim();
+          const count = parseInt(DOM.inpCount?.value || '10', 10);
+          const diff = DOM.inpDiff?.value?.trim();
+
+          if (!subject) { displayError('Validasi', 'Materi pelajaran wajib diisi'); DOM.inpSubject?.focus(); return; }
+          if (!diff) { displayError('Validasi', 'Tingkat kesulitan wajib diisi'); DOM.inpDiff?.focus(); return; }
+
+          APP.answers = {};
+          APP.questions = [];
+
+          if (DOM.quizTitle) DOM.quizTitle.textContent = 'Quiz: ' + subject;
+
+          showSection('loading');
+          setProgressStep(1, 'Memulai...');
+
+          try {
+            const questions = await fetchQuestions(subject, count, diff);
+            if (!questions || questions.length === 0) throw new Error('Tidak ada soal yang dihasilkan');
+
+            APP.questions = questions;
+            renderQuestions();
+            updateQuizProgress();
+
+            await wait(300);
+            showSection('quiz');
+
+          } catch (err) {
+            console.error('Error:', err);
+            displayError('Gagal Membuat Soal', err.message || 'Terjadi kesalahan');
+            showSection('form');
+          }
+        });
+      }
+
+      // Quiz options (delegation)
+      if (DOM.questionsWrap) {
+        DOM.questionsWrap.addEventListener('click', (e) => {
+          const btn = e.target.closest('.q-option');
+          if (!btn) return;
+          const idx = parseInt(btn.dataset.idx, 10);
+          const ans = btn.dataset.ans;
+          if (!isNaN(idx) && ans) pickAnswer(idx, ans);
+        });
+      }
+
+      // Submit quiz
+      if (DOM.btnSubmitQuiz) {
+        DOM.btnSubmitQuiz.addEventListener('click', () => {
+          showResults();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      // Cancel
+      if (DOM.btnCancel) {
+        DOM.btnCancel.addEventListener('click', () => {
+          if (confirm('Yakin ingin membatalkan?')) resetAll();
+        });
+      }
+
+      // Restart
+      if (DOM.btnRestart) {
+        DOM.btnRestart.addEventListener('click', resetAll);
+      }
+    }
+
+    // =============================================
+    // START
+    // =============================================
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
